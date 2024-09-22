@@ -22,7 +22,7 @@ struct ContentView: View {
 
                     Text(ext.status)
                     Spacer()
-                    Button(ext.status == "+" ? "关闭" : "开启") {
+                    Button(ext.status == "+" ? "Disable" : "Enable") {
                         toggleExt(ext)
                     }
                 }.padding([.vertical], 6)
