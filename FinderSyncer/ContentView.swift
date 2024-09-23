@@ -82,8 +82,6 @@ struct ContentView: View {
 
         let data = pipe.fileHandleForReading.readDataToEndOfFile()
 
-        print(String(data: data, encoding: .utf8) ?? "")
-
         fetchExtensions()
     }
 
@@ -157,7 +155,7 @@ struct ContentView: View {
 
         extensions = Array(extensionsDict.values).sorted { $0.bundle < $1.bundle }
 
-        logger.info("\(extensions)")
+//        logger.info("\(extensions)")
 
         return extensions
     }
