@@ -7,25 +7,42 @@
 
 import SwiftUI
 
-
 struct ContentView: View {
+    @AppLog(subsystem: "ContentView")
+    private var logger
+
     @State private var extensionsList: [ExtensionInfo] = []
+
+    @State private var vibrateOnRing = false
 
     var body: some View {
         VStack {
             List(extensionsList) { ext in
 
                 HStack {
+                    Image(nsImage: NSWorkspace.shared.icon(forFile: ext.path))
+                        .resizable()
+                        .frame(width: 28, height: 28)
                     Text(ext.parentName)
-
+                    Text(ext.bundle)
                     Text(ext.version)
-
-                    Text(ext.status)
+                    
                     Spacer()
-                    Button(ext.status == "+" ? "Disable" : "Enable") {
-                        toggleExt(ext)
+                    Image(systemName: ext.status == "+" ? "checkmark.square" : "square")
+                        .font(.system(size: 24)) // Set the size of the SF Symbol
+                        .foregroundColor(.blue)
+                }
+                .padding([.vertical], 6)
+                .onTapGesture {
+                    toggleExt(ext)
+                }
+                .onHover { hovering in
+                    if hovering {
+                        NSCursor.pointingHand.push() // Change to hand cursor
+                    } else {
+                        NSCursor.pop() // Revert to the default cursor
                     }
-                }.padding([.vertical], 6)
+                }
             }
             .cornerRadius(4)
         }
@@ -84,6 +101,8 @@ struct ContentView: View {
     }
 
     func parseExtensions(text: String) -> [ExtensionInfo] {
+        var extensionsDict: [String: ExtensionInfo] = [:]
+
         var extensions: [ExtensionInfo] = []
 
         // 使用正则表达式匹配扩展块
@@ -122,12 +141,41 @@ struct ContentView: View {
                         platform: String(text[platformRange])
                     )
 
-                    extensions.append(extensionInfo)
+                    // Compare the version if a bundle already exists in the dictionary
+                    if let existingExt = extensionsDict[extensionInfo.bundle] {
+                        if compareVersions(existingExt.version, extensionInfo.version) == .orderedAscending {
+                            // Replace the existing extension if the new one has a higher version
+                            extensionsDict[extensionInfo.bundle] = extensionInfo
+                        }
+                    } else {
+                        // Add the new extension to the dictionary
+                        extensionsDict[extensionInfo.bundle] = extensionInfo
+                    }
                 }
             }
         }
-        print("------ \(extensions.count)")
+
+        extensions = Array(extensionsDict.values).sorted { $0.bundle < $1.bundle }
+
+        logger.info("\(extensions)")
+
         return extensions
+    }
+
+    // Helper function to compare two version strings
+    func compareVersions(_ version1: String, _ version2: String) -> ComparisonResult {
+        let versionComponents1 = version1.split(separator: ".").map { Int($0) ?? 0 }
+        let versionComponents2 = version2.split(separator: ".").map { Int($0) ?? 0 }
+
+        for (v1, v2) in zip(versionComponents1, versionComponents2) {
+            if v1 < v2 {
+                return .orderedAscending
+            } else if v1 > v2 {
+                return .orderedDescending
+            }
+        }
+
+        return versionComponents1.count < versionComponents2.count ? .orderedAscending : .orderedSame
     }
 
     func runPluginkitCommand() -> String? {
@@ -150,8 +198,6 @@ struct ContentView: View {
         return String(data: data, encoding: .utf8)
     }
 }
-
-
 
 // 定义扩展的结构体
 struct ExtensionInfo: Identifiable {

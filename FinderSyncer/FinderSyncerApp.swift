@@ -15,8 +15,8 @@ struct FinderSyncerApp: App {
 
     var body: some Scene {
         WindowGroup {
-            ContentView()
-        }.defaultSize(CGSize(width: 600, height: 450))
+            ContentView().frame(minWidth: 450, idealWidth: 700, minHeight: 450, idealHeight: 470)
+        }.defaultSize(CGSize(width: 900, height: 600))
     }
 }
 
