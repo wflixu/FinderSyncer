@@ -16,7 +16,7 @@ struct ContentView: View {
     @State private var vibrateOnRing = false
 
     var body: some View {
-        VStack {
+        Section {
             List(extensionsList) { ext in
 
                 HStack {
@@ -26,7 +26,7 @@ struct ContentView: View {
                     Text(ext.parentName)
                     Text(ext.bundle)
                     Text(ext.version)
-                    
+
                     Spacer()
                     Image(systemName: ext.status == "+" ? "checkmark.square" : "square")
                         .font(.system(size: 24)) // Set the size of the SF Symbol
@@ -45,6 +45,18 @@ struct ContentView: View {
                 }
             }
             .cornerRadius(4)
+        }
+        header: {
+            HStack {
+                Spacer()
+                Button {
+                    fetchExtensions()
+                } label: {
+                    Label("Refresh", systemImage: "arrow.triangle.2.circlepath")
+                        .font(.title2)
+                        .padding(8)
+                }
+            }
         }
         .padding()
         .onAppear {
@@ -80,7 +92,7 @@ struct ContentView: View {
             print("Error running pluginkit: \(error)")
         }
 
-        let data = pipe.fileHandleForReading.readDataToEndOfFile()
+        pipe.fileHandleForReading.readDataToEndOfFile()
 
         fetchExtensions()
     }
