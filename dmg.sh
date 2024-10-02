@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 
 APP_NAME="FinderSyncer"
-DMG_FILE_NAME="Build/Products/Release/${APP_NAME}-Installer.dmg"
+DMG_FILE_NAME="Build/${APP_NAME}-Installer.dmg"
 VOLUME_NAME="${APP_NAME} Installer"
-SOURCE_FOLDER_PATH="Build/Products/Release/${APP_NAME}.app"
+SOURCE_FOLDER_PATH="Build/${APP_NAME}.app"
 
 
 test -f "${DMG_FILE_NAME}" && rm "${DMG_FILE_NAME}"
