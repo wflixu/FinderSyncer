@@ -20,12 +20,26 @@ struct ContentView: View {
             List(extensionsList) { ext in
 
                 HStack {
-                    Image(nsImage: NSWorkspace.shared.icon(forFile: ext.path))
-                        .resizable()
-                        .frame(width: 28, height: 28)
-                    Text(ext.parentName)
-                    Text(ext.bundle)
-                    Text(ext.version)
+                    VStack {
+                        Spacer()
+                        Image(nsImage: NSWorkspace.shared.icon(forFile: ext.path))
+                            .resizable()
+                            .frame(width: 48, height: 48)
+                    }
+
+                    VStack {
+                        Spacer()
+                        HStack {
+                            Text(ext.parentName).font(.title2)
+                            Text("(v\(ext.version))")
+                            Spacer()
+                        }
+                        HStack {
+                            Text(ext.bundle).font(.title3)
+
+                            Spacer()
+                        }
+                    }
 
                     Spacer()
                     Image(systemName: ext.status == "+" ? "checkmark.square" : "square")
@@ -100,11 +114,11 @@ struct ContentView: View {
     func fetchExtensions() {
         DispatchQueue.global(qos: .userInitiated).async {
             if let output = runPluginkitCommand() {
-//                print("output:\(output)")
                 self.extensionsList = self.parseExtensions(text: output)
             } else {
+                logger.warning("fetchExtensions get no info")
                 DispatchQueue.main.async {
-                    extensionsList = []
+                    self.extensionsList = []
                 }
             }
         }
@@ -162,12 +176,16 @@ struct ContentView: View {
                         extensionsDict[extensionInfo.bundle] = extensionInfo
                     }
                 }
+            }else {
+                logger.warning("regex.enumerateMatches has no result ")
             }
         }
 
         extensions = Array(extensionsDict.values).sorted { $0.bundle < $1.bundle }
 
-//        logger.info("\(extensions)")
+        if(extensions.isEmpty) {
+            logger.warning("extensions is empty")
+        }
 
         return extensions
     }
@@ -200,7 +218,7 @@ struct ContentView: View {
             try process.run()
             process.waitUntilExit()
         } catch {
-            print("Error running pluginkit: \(error)")
+            logger.warning("Error running pluginkit: \(error)")
             return nil
         }
 
